@@ -1,0 +1,177 @@
+{
+  "name": "7.Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "193b08f1-23df-41ae-b229-e4c6637c1d3c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://leobuyers.com/about-us/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "21c86055-c41d-4ffa-8032-1697413314e9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "destinationKey": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "410aadf2-fd68-4ee1-a759-5f62f8fba6e9",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task is to take the raw markdown text provided in the input and process it according to the following rules:\n\n1. Extract all URLs/links found in the text and format them strictly as a JSON array of strings.\n2. Extract all the main text content, clean it by removing all formatting (like markdown syntax, asterisks, brackets, newlines, navigation text, and headers), and provide a concise, clean summarized paragraph of the core information.\n3. Provide a brief, single-sentence (one line) summary of the core purpose of the page.\n\nReturn the final output strictly as a JSON object with three keys:\n- \"links\": An array containing all unique links found.\n- \"clean_summary\": A string containing the cleaned, paragraph-length summarized text content.\n- \"one_line_summary\": A string containing a concise, one-sentence summary of the page.\n\nDo not include any conversational filler or markdown code blocks (like ```json) in your response. Just return the raw JSON object.\n\nInput Data:\n{{ $json.data }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful web scrapping assistant."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "4cd3beea-ae1e-4b77-a6d5-9a004566526d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        256
+      ],
+      "id": "525eb821-a2e5-4d11-b51d-78aa2131a67c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "SIAm9yEryv51FbLm",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"clean_summary\": \"This is a clean plain text summary of the page content without any markdown elements.\",\n  \"links\": [\n    \"https://example.com/link1\",\n    \"https://example.com/link2\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        240
+      ],
+      "id": "c3da70c5-7a03-4039-b6f2-ca8317406e67",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2344982b-1738-478a-b5ef-7663fcac90b7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e4d782b1a84d275a8c4d4f281165f8f12e467577a085149ccf0dbe748b4b4cf"
+  },
+  "nodeGroups": [],
+  "id": "G1TyYEf3STpdIv26",
+  "tags": []
+}
